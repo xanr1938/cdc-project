@@ -1,0 +1,1 @@
+export default function SiteFooter(){return <footer className="footer"><div className="container"><strong>ศูนย์พัฒนาเด็กเล็ก</strong><p>ที่อยู่และข้อมูลติดต่อของศูนย์จะกำหนดในหน้าตั้งค่าก่อนเปิดใช้งานจริง</p><span>เว็บไซต์ตัวอย่างสำหรับพัฒนาต่อ — โปรดอย่าใส่ข้อมูลเด็กจริงในระบบที่ยังไม่ได้ตรวจสอบความปลอดภัย</span></div></footer>}

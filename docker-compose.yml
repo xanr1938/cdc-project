@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: child-center-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: childcenter
+      POSTGRES_USER: childcenter
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    # Intentionally bind only to localhost; do not expose PostgreSQL publicly.
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - child_center_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U childcenter -d childcenter"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  child_center_pgdata:

@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function SiteHeader(){return <header className="topbar"><div className="container nav"><Link href="/" className="brand"><span className="brandmark">🌱</span><span>ศูนย์พัฒนาเด็กเล็ก<br/><small style={{fontWeight:500,color:"#65736d"}}>เติบโต เรียนรู้ ปลอดภัย</small></span></Link><nav className="navlinks"><Link href="/announcements">ประชาสัมพันธ์</Link><Link href="/apply">สมัครเรียน</Link><Link href="/login" className="btn secondary">สำหรับเจ้าหน้าที่</Link></nav></div></header>}

@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  TEACHER
+  REGISTRAR
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  NEEDS_CORRECTION
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String
+  role         UserRole @default(TEACHER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  auditEvents  AuditLog[]
+  reviewedApps ChildApplication[] @relation("ApplicationReviewer")
+  announcements Announcement[]
+
+  @@index([role, isActive])
+}
+
+model ChildApplication {
+  id                 String            @id @default(cuid())
+  applicationNumber String            @unique
+  academicYear       Int
+  status             ApplicationStatus @default(SUBMITTED)
+
+  // Collect only information the center has a lawful, documented need to use.
+  childFirstName     String
+  childLastName      String
+  childDateOfBirth   DateTime
+  childAddress       String
+  guardianFullName   String
+  guardianRelation   String
+  guardianPhone      String
+  guardianEmail      String?
+
+  // Never store uploaded documents as public URLs. Store an opaque storage key only.
+  documentStorageKeys String[] @default([])
+
+  privacyNoticeVersion String
+  privacyNoticeAcceptedAt DateTime
+  submittedAt         DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  reviewedAt          DateTime?
+  reviewedById        String?
+  reviewer            User? @relation("ApplicationReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  auditEvents         AuditLog[]
+
+  @@index([academicYear, status, submittedAt])
+  @@index([childLastName, childFirstName])
+}
+
+model Announcement {
+  id          String             @id @default(cuid())
+  title       String
+  slug        String             @unique
+  summary     String
+  body        String
+  status      AnnouncementStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  authorId    String
+  author      User               @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([status, publishedAt])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  actorUserId    String?
+  actor          User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  applicationId  String?
+  application    ChildApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  action         String
+  targetType     String
+  targetId       String?
+  requestId      String?
+  createdAt      DateTime @default(now())
+
+  // Do not put children's names, phone numbers, tokens, or document contents here.
+  @@index([actorUserId, createdAt])
+  @@index([applicationId, createdAt])
+}
